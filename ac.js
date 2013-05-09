@@ -6,7 +6,7 @@ function AsyncCache(opt) {
   if (!opt || typeof opt !== 'object')
     throw new Error('options must be an object');
 
-  if (!opt.load)
+  if (!opt.load && !opt.inPlace)
     throw new Error('load function is required');
 
   if (!(this instanceof AsyncCache))
@@ -27,7 +27,7 @@ Object.defineProperty(AsyncCache.prototype, 'itemCount', {
   configurable: true
 });
 
-AsyncCache.prototype.get = function(key, cb) {
+AsyncCache.prototype.get = function(key, cb, load) {
   if (this._loading[key])
     return this._loading[key].push(cb);
 
@@ -45,7 +45,8 @@ AsyncCache.prototype.get = function(key, cb) {
   else
     this._loading[key] = [ cb ];
 
-  this._load(key, function(er, res) {
+  load = load || this._load;
+  load(key, function(er, res) {
     if (!er)
       this._cache.set(key, res);
 

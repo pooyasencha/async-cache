@@ -99,3 +99,33 @@ test('allow stale', function(t) {
     }, 15);
   });
 });
+
+test('load in place', function(t) {
+  var v = 0;
+  var ac = new AC({
+    max: 1,
+    inPlace: true
+  });
+
+  t.equal(ac.itemCount, 0);
+  ac.get('foo', function(er, val) {
+    t.equal(ac.itemCount, 1);
+    console.error('result1', er, val);
+    t.equal(val, 'result1');
+    setTimeout(function() {
+      ac.get('foo', function(er, val) {
+        console.error('result2', er, val);
+        t.equal(val, 'result1');
+        t.end();
+      }, function(key, cb) {
+        setTimeout(function() {
+          cb(null, 'result2');
+        }, 100);
+      });
+    }, 2);
+  }, function(key, cb) {
+    setTimeout(function() {
+      cb(null, 'result1');
+    }, 5);
+  });
+});
